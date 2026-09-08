@@ -12,16 +12,17 @@ import torch.nn.functional as F
 
 def linear_beta_schedule(T: int, beta_start: float = 1e-4, beta_end: float = 0.02):
     # TODO: return a linear beta schedule of length T
-    if T <= 1:
-        return torch.tensor([beta_start])
+    # if T <= 1:
+    #     return torch.tensor([beta_start])
 
-    betas = []
-    each_beta = (beta_end - beta_start) / (T - 1)
-    for t in range(T):
-        betas.append(beta_start)
-        beta_start += each_beta
-    betas = torch.tensor(betas)
-    return betas
+    # betas = []
+    # each_beta = (beta_end - beta_start) / (T - 1)
+    # for t in range(T):
+    #     betas.append(beta_start)
+    #     beta_start += each_beta
+    # betas = torch.tensor(betas)
+    # return betas 
+    return torch.linspace(beta_start,beta_end,T)
 
 # Step 2 - alphas_from_betas
 import torch
@@ -64,13 +65,13 @@ import torch.nn.functional as F
 
 def build_diffusion_schedule(T: int = 100, beta_start: float = 1e-4, beta_end: float = 0.02) -> dict:
     # TODO: build betas, alphas, alphas_cumprod and useful sqrts
-    betas = []
-    each_beta = (beta_end - beta_start) / (T - 1)
-    add_t = beta_start
-    for t in range(T):
-        betas.append(add_t)
-        add_t += each_beta
-    betas = torch.tensor(betas)
+    # betas = []
+    # each_beta = (beta_end - beta_start) / (T - 1)
+    # add_t = beta_start
+    # for t in range(T):
+    #     betas.append(add_t)
+    #     add_t += each_beta
+    betas = linear_beta_schedule(T,beta_start,beta_end)
 
     alphas = 1 - betas 
 
