@@ -111,8 +111,27 @@ def diffusion_training_loss(model, x0, t, noise, alphas_cumprod):
     # 预测目标是 原始 noise 而不是 真正加上去的 noise
     return F.mse_loss(predict_noise, noise)
 
-# Step 9 - timestep_embedding (not yet solved)
-# TODO: implement
+# Step 9 - timestep_embedding
+import torch
+import torch.nn.functional as F
+
+def timestep_embedding(t, dim: int):
+    # TODO: sinusoidal timestep embedding of shape (B, dim)
+    half = int(dim) // 2
+
+    i = torch.arange(half) # 0 ... h - 1， dim=h
+
+    exponent = i / max(half - 1, 1)
+
+    w_i = (1 / (10000 ** exponent)) # dim
+    # timesteps.cat(torch.sin(w_i * t))
+    # timesteps.cat(torch.cos(w_i * t))
+    # t , dim=B
+
+    w_i = w_i.reshape(1,-1) # (1, h)
+    t = t.reshape(-1,1) # (B, 1)
+
+    return torch.cat([torch.sin(w_i * t),torch.cos(w_i * t)],dim=1)
 
 # Step 10 - init_tiny_unet (not yet solved)
 # TODO: implement
