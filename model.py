@@ -105,8 +105,10 @@ import torch.nn.functional as F
 def diffusion_training_loss(model, x0, t, noise, alphas_cumprod):
     # TODO: q_sample -> model -> MSE(noise_pred, noise)
     t = t.reshape(-1,1,1,1)
-    xt = alphas_cumprod[t].sqrt() * x0 + (1 - alphas_cumprod[t]).sqrt() * noise
+    # xt = alphas_cumprod[t].sqrt() * x0 + (1 - alphas_cumprod[t]).sqrt() * noise
+    xt = q_sample(x0,t,noise,alphas_cumprod)
     predict_noise = model(xt,t)
+    # 预测目标是 原始 noise 而不是 真正加上去的 noise
     return F.mse_loss(predict_noise, noise)
 
 # Step 9 - timestep_embedding (not yet solved)
