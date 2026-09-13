@@ -209,8 +209,38 @@ def make_blob_dataset(n: int = 128, size: int = 8, seed: int = 0):
 
     return x
 
-# Step 13 - ddpm_train_step (not yet solved)
-# TODO: implement
+# Step 13 - ddpm_train_step
+import torch
+import torch.nn.functional as F
+
+def ddpm_train_step(params: dict, x0, schedule: dict, lr: float = 1e-2, seed: int = 0) -> tuple[dict, float]:
+    # TODO: sample t,noise -> loss -> SGD on params
+    torch.manual_seed(seed)
+    t = torch.randint(schedule['T'],(x0.shape[0],)) # sample t
+    t_reshape = t.reshape(-1,1,1,1)
+    # sample noise
+    noise = torch.randn_like(x0)
+
+    x_t = schedule["sqrt_alphas_cumprod"][t_reshape] * x0 + schedule["sqrt_one_minus_alphas_cumprod"][t_reshape] * noise
+
+    pred_noise = tiny_unet_forward(x_t,t,params)
+
+    loss =  F.mse_loss(pred_noise, noise)
+
+    def sgd(loss,ps,lr):
+        loss.backward()
+
+        new_p = {}
+
+        for name, p in ps.items():
+            if p.grad is not None:
+                p_new = (p - lr * p.grad).detach().requires_grad_(True)
+            else:
+                p_new = p.clone().detach().requires_grad_(True)
+
+            new_p[name] = p_new
+        return new_p
+    return sgd(loss,params,lr), float(loss)
 
 # Step 14 - train_ddpm (not yet solved)
 # TODO: implement
