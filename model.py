@@ -270,8 +270,16 @@ def predict_x0_from_eps(x_t, t, eps, alphas_cumprod):
     x0_hat = (x_t - torch.sqrt(1 - a) * eps) / torch.sqrt(a)
     return x0_hat
 
-# Step 16 - ddpm_p_mean_variance (not yet solved)
-# TODO: implement
+# Step 16 - ddpm_p_mean_variance
+import torch
+import torch.nn.functional as F
+
+def ddpm_p_mean_variance(x_t, t, eps, schedule: dict):
+    # TODO: return (posterior_mean, variance, x0_hat)
+    x0_hat = predict_x0_from_eps(x_t, t, eps, schedule["alphas_cumprod"]).clamp(-1,1)
+    # if t == 0:
+    mu = (schedule["sqrt_alphas_cumprod"][t-1] * schedule["betas"][t] / (1 - schedule["alphas_cumprod"][t])).reshape(-1,1,1,1) * x0_hat + (torch.sqrt(schedule["alphas"][t]) * (1 - schedule["alphas_cumprod"][t-1]) / (1 - schedule["alphas_cumprod"][t])).reshape(-1,1,1,1) * x_t
+    return (mu, schedule["betas"][t].reshape(-1,1,1,1), x0_hat)
 
 # Step 17 - ddpm_p_sample (not yet solved)
 # TODO: implement
