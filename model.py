@@ -279,13 +279,15 @@ def ddpm_p_mean_variance(x_t, t, eps, schedule: dict):
     x0_hat = predict_x0_from_eps(x_t, t, eps, schedule["alphas_cumprod"]).clamp(-1,1)
     # if t == 0:
 
+    alphas_cumprod_t_minus_1 = torch.cat([torch.ones_like(schedule["alphas_cumprod"][:1]),schedule["alphas_cumprod"][:-1]])[t]
+
     mu = (
-            torch.sqrt(schedule["alphas_cumprod"][t-1])
+            torch.sqrt(alphas_cumprod_t_minus_1)
             * schedule["betas"][t] 
             / (1 - schedule["alphas_cumprod"][t])
         ).reshape(-1,1,1,1) * x0_hat + (
                 torch.sqrt(schedule["alphas"][t]) * 
-                (1 - schedule["alphas_cumprod"][t-1]) 
+                (1 - alphas_cumprod_t_minus_1) 
                 / (1 - schedule["alphas_cumprod"][t])
             ).reshape(-1,1,1,1) * x_t
     return (mu, schedule["betas"][t].reshape(-1,1,1,1), x0_hat)
