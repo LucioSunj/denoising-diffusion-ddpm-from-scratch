@@ -292,8 +292,24 @@ def ddpm_p_mean_variance(x_t, t, eps, schedule: dict):
             ).reshape(-1,1,1,1) * x_t
     return (mu, schedule["betas"][t].reshape(-1,1,1,1), x0_hat)
 
-# Step 17 - ddpm_p_sample (not yet solved)
-# TODO: implement
+# Step 17 - ddpm_p_sample
+import torch
+import torch.nn.functional as F
+
+def ddpm_p_sample(x_t, t, params: dict, schedule: dict, noise=None):
+    # TODO: one reverse step x_t -> x_{t-1}
+    if noise is None:
+        noise = torch.randn_like(x_t)
+    pred_noise = tiny_unet_forward(x_t, t, params)
+
+    # calculate the reverse gaussian from predicted noise
+    mean, var, _ = ddpm_p_mean_variance(x_t, t, pred_noise, schedule) # x_t-1 就是直接从这个 gaussian 中采样得到了
+
+    # torch tensor 的二元条件项应该通过 mask 实现
+    no_zero_mask_t = (t != 0).reshape(-1,1,1,1)
+
+    x_prev = mean + no_zero_mask_t * torch.sqrt(var) * noise
+    return x_prev
 
 # Step 18 - ddpm_sample_loop (not yet solved)
 # TODO: implement
